@@ -229,7 +229,7 @@ function renderRobot(sceneMatrix, viewMatrix) {
   gl.enableVertexAttribArray(colorLocation);
 
   // TASK 10-2
-
+  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle/2)));
   sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0.3,0,0.15));
   
   // store current sceneMatrix in originSceneMatrix, so it can be restored
@@ -244,9 +244,7 @@ function renderRobot(sceneMatrix, viewMatrix) {
   
   // TASK 9 and 10
   // body
-  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
   sceneMatrix = originSceneMatrix;
-  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(65)));
   setUpModelViewMatrix(viewMatrix, sceneMatrix);
   // TASK 8-3
   renderCube();
@@ -260,17 +258,13 @@ function renderRobot(sceneMatrix, viewMatrix) {
   
   // TASK 10-1
   // left leg
-  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
   sceneMatrix = originSceneMatrix;
-  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(-25)));
   sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(-0.15,-0.6,0.0));
   sceneMatrix = matrixMultiply(sceneMatrix, makeScaleMatrix(0.2,1,1));
   setUpModelViewMatrix(viewMatrix, sceneMatrix);
   renderCube();
   // right leg
-  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
   sceneMatrix = originSceneMatrix;
-  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(-25)));
   sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0.15,-0.6,0.0));
   sceneMatrix = matrixMultiply(sceneMatrix, makeScaleMatrix(0.2,1,1));
   setUpModelViewMatrix(viewMatrix, sceneMatrix);
