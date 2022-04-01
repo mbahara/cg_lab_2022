@@ -191,11 +191,15 @@ function renderQuad(sceneMatrix, viewMatrix) {
 
   //TASK 2-2 and TASK 3 and TASK 4
   //sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0,-0.5,0));
-  sceneMatrix = matrixMultiply(matrixMultiply( matrixMultiply(
-                                sceneMatrix, 
-                                makeXRotationMatrix(convertDegreeToRadians(45))),
-                                makeTranslationMatrix(0,-0.5,0)), 
-                                makeScaleMatrix(.5, .5, 1));
+  // sceneMatrix = matrixMultiply(matrixMultiply( matrixMultiply(
+  //                               sceneMatrix, 
+  //                               makeXRotationMatrix(convertDegreeToRadians(45))),
+  //                               makeTranslationMatrix(0,-0.5,0)), 
+  //                               makeScaleMatrix(.5, .5, 1));
+  // other posibility to write the same code
+  sceneMatrix = matrixMultiply(sceneMatrix, makeXRotationMatrix(convertDegreeToRadians(90)));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0,-0.5,1));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeScaleMatrix(.5,.5,1));
   setUpModelViewMatrix(viewMatrix, sceneMatrix);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, quadVertexBuffer);
@@ -226,19 +230,49 @@ function renderRobot(sceneMatrix, viewMatrix) {
 
   // TASK 10-2
 
+  sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0.3,0,0.15));
+  
   // store current sceneMatrix in originSceneMatrix, so it can be restored
   var originSceneMatrix = sceneMatrix;
-
-  // TASK 9 and 10
-  //sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
+  
+  // head
   sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
-  sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0.0, 0.4, 0));
-  sceneMatrix = matrixMultiply(sceneMatrix, makeScaleMatrix(0.4, 0.33, 0.5));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0,0.4,0));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeScaleMatrix(0.3,0.3,0.4));
   setUpModelViewMatrix(viewMatrix, sceneMatrix);
   renderCube();
-
-  // TASK 10-1
+  
+  // TASK 9 and 10
+  // body
+  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
   sceneMatrix = originSceneMatrix;
+  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(65)));
+  setUpModelViewMatrix(viewMatrix, sceneMatrix);
+  // TASK 8-3
+  renderCube();
+  
+  // my test thing
+  // sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
+  // sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0,1,0));
+  // setUpModelViewMatrix(viewMatrix, sceneMatrix);
+  // renderCube();
+  
+  
+  // TASK 10-1
+  // left leg
+  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
+  sceneMatrix = originSceneMatrix;
+  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(-25)));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(-0.15,-0.6,0.0));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeScaleMatrix(0.2,1,1));
+  setUpModelViewMatrix(viewMatrix, sceneMatrix);
+  renderCube();
+  // right leg
+  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(animatedAngle)));
+  sceneMatrix = originSceneMatrix;
+  sceneMatrix = matrixMultiply(sceneMatrix, makeYRotationMatrix(convertDegreeToRadians(-25)));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeTranslationMatrix(0.15,-0.6,0.0));
+  sceneMatrix = matrixMultiply(sceneMatrix, makeScaleMatrix(0.2,1,1));
   setUpModelViewMatrix(viewMatrix, sceneMatrix);
   renderCube();
 
