@@ -11,7 +11,8 @@ uniform mat4 u_projection;
 
 //TASK 3-3 light position as uniform
 //TASK 5-3 second light source
-vec3 lightPos = vec3(0, -2, 2);
+//vec3 lightPos = vec3(0, -2, 2);
+uniform vec3 u_lightPos;
 
 //output of this shader
 varying vec3 v_normalVec;
@@ -22,11 +23,11 @@ varying vec3 v_light2Vec;
 void main() {
 	vec4 eyePosition = u_modelView * vec4(a_position,1);
 
-  v_normalVec = u_normalMatrix * a_normal;
+	v_normalVec = u_normalMatrix * a_normal;
 
-  v_eyeVec = -eyePosition.xyz;
+	v_eyeVec = -eyePosition.xyz;
 	//TASK 3-4 light position as uniform
-	v_lightVec = lightPos - eyePosition.xyz;
+	v_lightVec = u_lightPos - eyePosition.xyz;
 	//TASK 5-4 second light source position
 
 	gl_Position = u_projection * eyePosition;

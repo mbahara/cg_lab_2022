@@ -57,11 +57,15 @@ function createSceneGraph(gl, resources) {
 
   {
     //TASK 3-6 create white light node at [0, 2, 2]
-    //light.ambient = [.5, .5, .5, 1];
-    //light.diffuse = [1, 1, 1, 1];
-    //light.specular = [1, 1, 1, 1];
-
+    let light = new LightNode();
+    light.ambient = [0, 0, 0, 1];
+    light.diffuse = [1, 1, 1, 1];
+    light.specular = [1, 1, 1, 1];
+    light.position = [0, 3.5, 2];
+    light.append(createLightSphere());
     //TASK 4-1 animated light using rotateLight transformation node
+    rotateLight = new TransformationSGNode(mat4.create(), [light]);
+    root.append(rotateLight);
   }
 
 
@@ -81,12 +85,12 @@ function createSceneGraph(gl, resources) {
 
   {
     //TASK 2-4 wrap with material node
-    let c3po = new RenderSGNode(resources.model);
-
-    //c3po.ambient = [0.24725, 0.1995, 0.0745, 1];
-    //c3po.diffuse = [0.75164, 0.60648, 0.22648, 1];
-    //c3po.specular = [0.628281, 0.555802, 0.366065, 1];
-    //c3po.shininess = 50;
+    let c3po = new MaterialNode([new RenderSGNode(resources.model)]);
+    // gold
+    c3po.ambient = [0.24725, 0.1995, 0.0745, 1];
+    c3po.diffuse = [0.75164, 0.60648, 0.22648, 1];
+    c3po.specular = [0.628281, 0.555802, 0.366065, 1];
+    c3po.shininess = 50;
 
     rotateNode = new TransformationSGNode(mat4.create(), [
       new TransformationSGNode(glm.translate(0,-1.5, 0),  [
@@ -98,13 +102,13 @@ function createSceneGraph(gl, resources) {
 
   {
     //TASK 2-5 wrap with material node
-    let floor = new RenderSGNode(makeRect(2, 2));
+    let floor = new MaterialNode([new RenderSGNode(makeRect())]);
 
     //dark
-    //floor.ambient = [0, 0, 0, 1];
-    //floor.diffuse = [0.1, 0.1, 0.1, 1];
-    //floor.specular = [0.5, 0.5, 0.5, 1];
-    //floor.shininess = 3;
+    floor.ambient = [0, 0, 0, 1];
+    floor.diffuse = [0.1, 0.1, 0.1, 1];
+    floor.specular = [0.5, 0.5, 0.5, 1];
+    floor.shininess = 3;
 
 
     root.append(new TransformationSGNode(glm.transform({ translate: [0,-1.5,0], rotateX: -90, scale: 3}), [
@@ -139,7 +143,7 @@ function render(timeInMilliseconds) {
   previousTime = timeInMilliseconds;
 
   //TASK 4-2 enable light rotation
-  // rotateLight.matrix = glm.rotateY(timeInMilliseconds*0.05);
+  rotateLight.matrix = glm.rotateY(timeInMilliseconds*0.05);
   //TASK 5-2 enable/update second light rotation
   // light2Animation.update(deltaTime);
 
@@ -176,6 +180,11 @@ class MaterialNode extends SGNode {
     //hint setting a structure element using the dot notation, e.g. u_material.ambient
     //setting a uniform: gl.uniform<UNIFORM TYPE>(gl.getUniformLocation(shader, <UNIFORM NAME>), VALUE);
     // e.g.: gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.ambient'), this.ambient);
+    gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.ambient'), this.ambient);
+    gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.diffuse'), this.diffuse);
+    gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.specular'), this.specular);
+    gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.emission'), this.emission);
+    gl.uniform1f(gl.getUniformLocation(shader, this.uniform+'.shininess'), this.shininess);
   }
 
   render(context) {
@@ -218,11 +227,11 @@ class LightNode extends TransformationSGNode {
       position = this.computeLightPosition(context);
 
     //TASK 3-5 set uniforms
-	  // gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.ambient'), this.ambient);
-    // gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.diffuse'), this.diffuse);
-    // gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.specular'), this.specular);
+	  gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.ambient'), this.ambient);
+    gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.diffuse'), this.diffuse);
+    gl.uniform4fv(gl.getUniformLocation(shader, this.uniform+'.specular'), this.specular);
     // and set position (in eye/camera space):
-    // gl.uniform3f(gl.getUniformLocation(shader, this.uniform+'Pos'), position[0], position[1], position[2]);
+    gl.uniform3f(gl.getUniformLocation(shader, this.uniform+'Pos'), position[0], position[1], position[2]);
   }
 
   render(context) {
