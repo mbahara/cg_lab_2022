@@ -33,7 +33,8 @@ varying vec3 v_lightVec;
 //texture related variables
 uniform bool u_enableObjectTexture; //note: boolean flags are a simple but not the best option to handle textured and untextured objects
 //TASK 1: define texture sampler and texture coordinates
-
+varying vec2 v_texCord;
+uniform sampler2D u_tex;
 
 vec4 calculateSimplePointLight(Light light, Material material, vec3 lightVec, vec3 normalVec, vec3 eyeVec, vec4 textureColor) {
 	// You can find all built-in functions (min, max, clamp, reflect, normalize, etc.) 
@@ -53,8 +54,9 @@ vec4 calculateSimplePointLight(Light light, Material material, vec3 lightVec, ve
   if(u_enableObjectTexture)
   {
     //TASK 2: replace diffuse and ambient material color with texture color
-
-		//Note: an alternative to replacing the material color is to multiply it with the texture color
+	material.diffuse = textureColor;
+  	material.ambient = textureColor;
+	//Note: an alternative to replacing the material color is to multiply it with the texture color
   }
 
 	vec4 c_amb  = clamp(light.ambient * material.ambient, 0.0, 1.0);
@@ -71,9 +73,11 @@ void main (void) {
   if(u_enableObjectTexture)
   {
     //TASK 2: integrate texture color into phong shader
-		//TASK 1: simple texturing: replace vec4(0,0,0,1) with texture lookup
-    gl_FragColor =  vec4(0,0,0,1); //replace me for TASK 1 and remove me for TASK 2!!!
-    return; //remove me for TASK 2
+	//TASK 1: simple texturing: replace vec4(0,0,0,1) with texture lookup
+    //gl_FragColor =  vec4(0,0,0,1); //replace me for TASK 1 and remove me for TASK 2!!!
+	//gl_FragColor = texture2D(u_tex, v_texCord);
+	textureColor = texture2D(u_tex, v_texCord);
+	//return; //remove me for TASK 2
   }
 
 	gl_FragColor = calculateSimplePointLight(u_light, u_material, v_lightVec, v_normalVec, v_eyeVec, textureColor);

@@ -53,7 +53,7 @@ function init(resources) {
   //init textures
   initTextures(resources);
   //TASK 5: call init function for framebuffer
-  //initRenderToTexture();
+  initRenderToTexture();
 
   gl.enable(gl.DEPTH_TEST);
 
@@ -117,11 +117,10 @@ function createSceneGraph(gl, resources) {
   {
     //TASK 5: switch to color texture of framebuffer
     //TASK 1: apply TextureSGNode to floor (similar to MaterialSGNode)
-
     //initialize floor
     let floor = new MaterialSGNode(
-                new RenderSGNode(makeFloor())
-                );
+      new TextureSGNode(renderTargetColorTexture, 2, new RenderSGNode(makeFloor(2, 2))
+      ));
 
     //dark
     floor.ambient = [0, 0, 0, 1];
@@ -149,8 +148,8 @@ function initTextures(resources)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   //TASK 4: change texture sampling behaviour
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
   //upload texture data
   gl.texImage2D(gl.TEXTURE_2D, //texture unit target == texture type
     0, //level of detail level (default 0)
@@ -183,11 +182,27 @@ function initRenderToTexture() {
     ?, //image format (should match internal format)
     ?, //image data type
     ?); //actual image data (null if texture should be empty)*/
-
+  renderTargetColorTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, renderTargetColorTexture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebufferWidth, framebufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    
   //create depth texture
   //variable name: renderTargetDepthTexture; format: gl.DEPTH_COMPONENT32F; image data type: gl.FLOAT
-
+  renderTargetDepthTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, renderTargetDepthTexture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, framebufferWidth, framebufferHeight, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
+  
   //attach textures to framebuffer
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, renderTargetColorTexture, 0);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, renderTargetDepthTexture, 0);
 
   //check if framebuffer was created successfully
   if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!=gl.FRAMEBUFFER_COMPLETE)
@@ -201,7 +216,8 @@ function initRenderToTexture() {
 function makeFloor() {
   var floor = makeRect(2, 2);
   //TASK 3: adapt texture coordinates
-  floor.texture = [0, 0,   1, 0,   1, 1,   0, 1];
+  //floor.texture = [0, 0,   1, 0,   1, 1,   0, 1];
+  floor.texture = [0, 0,   5, 0,   5, 5,   0, 5];
   return floor;
 }
 
@@ -209,15 +225,23 @@ function renderToTexture(timeInMilliseconds)
 {
   //TASK 5: Render C3PO to framebuffer/texture
   //bind framebuffer (to draw scene into texture)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, renderTargetFramebuffer);
 
   //setup viewport
+  gl.viewport(0, 0, framebufferWidth, framebufferHeight);
+  gl.clearColor(0.9, 0.9, 0.9, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
 
   //setup context and camera matrices
+  const context = createSGContext(gl);
+  context.projectionMatrix = mat4.perspective(mat4.create(), glm.deg2rad(30), framebufferWidth / framebufferHeight, 0.01, 100);
+  context.viewMatrix = mat4.lookAt(mat4.create(), [0,1,-10], [0,0,0], [0,1,0]);
 
   //render scenegraph
-
+  rootnofloor.render(context);
   //disable framebuffer (to render to screen again)
-
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 function render(timeInMilliseconds) {
@@ -235,7 +259,7 @@ function render(timeInMilliseconds) {
   const context = createSGContext(gl);
   context.projectionMatrix = mat4.perspective(mat4.create(), glm.deg2rad(30), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.01, 100);
   //very primitive camera implementation
-  let lookAtMatrix = mat4.lookAt(mat4.create(), [0,1,-10], [0,0,0], [0,1,0]);
+  let lookAtMatrix = mat4.lookAt(mat4.create(), [5,1,-10], [0,0,0], [0,1,0]);
   let mouseRotateMatrix = mat4.multiply(mat4.create(),
                           glm.rotateX(camera.rotation.y),
                           glm.rotateY(camera.rotation.x));
@@ -267,15 +291,20 @@ class TextureSGNode extends SGNode {
 
     //set shader parameters
     //TASK 1: set texture unit to sampler in shader
+    gl.uniform1i(gl.getUniformLocation(context.shader, 'u_tex'), this.textureunit);
 
     //activate/select texture unit and bind texture
     //TASK 1: activate/select texture unit and bind texture
+    gl.activeTexture(gl.TEXTURE0 + this.textureunit);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
     //render children
     super.render(context);
 
     //clean up
     //TASK 1: activate/select texture unit and bind null
+    gl.activeTexture(gl.TEXTURE0 + this.textureunit);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
     //disable texturing in shader
     gl.uniform1i(gl.getUniformLocation(context.shader, 'u_enableObjectTexture'), 0);
