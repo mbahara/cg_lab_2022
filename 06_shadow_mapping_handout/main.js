@@ -234,7 +234,7 @@ class ShadowSGNode extends SGNode {
 
     //TASK 2.1: compute eye-to-light matrix by multiplying this.lightViewProjectionMatrix and context.invViewMatrix
     //Hint: Look at the computation of lightViewProjectionMatrix to see how to multiply two matrices and for the correct order of the matrices!
-    var eyeToLightMatrix = mat4.create();
+    var eyeToLightMatrix = mat4.multiply(mat4.create(), this.lightViewProjectionMatrix, context.invViewMatrix);
     gl.uniformMatrix4fv(gl.getUniformLocation(context.shader, 'u_eyeToLightMatrix'), false, eyeToLightMatrix);
 
     //activate and bind texture
@@ -272,7 +272,7 @@ function renderToTexture(timeInMilliseconds)
   let worldLightLookAtPos = [0,0,0];
   let upVector = [0,1,0];
   //TASK 1.1: setup camera to look at the scene from the light's perspective
-  let lookAtMatrix = mat4.lookAt(mat4.create(), [0,1,-10], [0,0,0], [0,1,0]); //replace me for TASK 1.1
+  let lookAtMatrix = mat4.lookAt(mat4.create(), worldLightPos, worldLightLookAtPos, upVector); //replace me for TASK 1.1
   context.viewMatrix = lookAtMatrix;
 
   //multiply and save light projection and view matrix for later use in shadow mapping shader!
